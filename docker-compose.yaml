@@ -1,0 +1,35 @@
+version: "3.0"
+services:
+  web:
+    build: ./backend
+    command: uvicorn main:app --reload --workers 1 --host 0.0.0.0 --port 8888
+    volumes:
+      - ./backend:/usr/src/app
+    ports:
+      - "8888:8888"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/postgres
+    depends_on:
+      - db
+    networks:
+      - custom
+
+  db:
+    container_name: "db"
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    networks:
+      - custom
+
+
+networks:
+  custom:
+    driver: bridge
