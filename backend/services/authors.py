@@ -50,6 +50,10 @@ class AuthorService:
         authors = await author_dal.get_all()
         return [AuthorShowing(name=author.name) for author in authors]
 
+    async def delete(self, author_id: UUID) -> UUID:
+        author_dal = AuthorDAL(self.session)
+        return await author_dal.delete(author_id)
+
     async def update(
             self,
             author_id: UUID,

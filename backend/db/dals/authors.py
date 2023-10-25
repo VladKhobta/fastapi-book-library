@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import delete, update
 from sqlalchemy import select, func
+from sqlalchemy.orm import selectinload
 
 from uuid import UUID
 from typing import List, Union
@@ -47,6 +48,25 @@ class AuthorDAL:
     async def get_all(self) -> List[Author]:
         res = await self.session.execute(select(Author))
         return res.scalars().all()
+
+    async def delete(
+            self,
+            author_id: UUID
+    ) -> UUID:
+        res = await self.session.execute(
+            select(Author)
+            .where(Author.id == author_id)
+            .options(
+                selectinload(Author.books)
+            )
+        )
+        author = res.scalar_one()
+        for book in author.books:
+            await self.session.delete(book)
+        await self.session.delete(author)
+        await self.session.commit()
+        return author_id
+
 
     async def update(
             self,

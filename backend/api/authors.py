@@ -45,11 +45,17 @@ async def create_author(
     return await author_service.create(body)
 
 
-@author_router.delete("/{book_id}")
-def delete_author(
-        book_id: UUID
-):
-    pass
+@author_router.delete("/{author_id}")
+async def delete_author(
+        author_id: UUID,
+        author_service: AuthorService = Depends()
+) -> UUID:
+    if not await author_service.get_by_id(author_id):
+        raise HTTPException(
+            status_code=404,
+            detail=f"Author with {author_id} id is not found"
+        )
+    return await author_service.delete(author_id)
 
 
 @author_router.put("/{author_id}")

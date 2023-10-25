@@ -96,6 +96,6 @@ class BookDAL:
         book = res.scalar_one()
         for author in book.authors:
             await self.session.delete(author)
-        print(await self.session.delete(book))
+        await self.session.delete(book)
         await self.session.commit()
         return book_id

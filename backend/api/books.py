@@ -59,6 +59,11 @@ async def create_book(
             status_code=404,
             detail=f"{body.genre} genre is not found"
         )
+    if await book_service.get_by_title(body.title):
+        raise HTTPException(
+            status_code=409,
+            detail=f"Book with {body.title} title is already exists"
+        )
     return await book_service.create(body)
 
 
@@ -76,7 +81,27 @@ async def delete_book(
 
 
 @book_router.put("/{book_id}")
-def update_book(
-        book_id: UUID
-):
-    pass
+async def update_book(
+        book_id: UUID,
+        body: BookCreation,
+        book_service: BookService = Depends(),
+        author_service: AuthorService = Depends(),
+        genre_service: GenreService = Depends()
+) -> UUID:
+    if not await book_service.get_by_id(book_id):
+        raise HTTPException(
+            status_code=404,
+            detail=f"Book with {book_id} id is not found"
+        )
+    for name in body.authors:
+        if not await author_service.get_by_name(name):
+            raise HTTPException(
+                status_code=404,
+                detail=f"Author with {name} name is not found"
+            )
+    if body.genre and not await genre_service.get_by_name(body.genre):
+        raise HTTPException(
+            status_code=404,
+            detail=f"{body.genre} genre is not found"
+        )
+    return await book_service.update(book_id, body)

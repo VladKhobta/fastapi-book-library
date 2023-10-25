@@ -16,7 +16,14 @@ class BookCreation(BaseModel):
     genre: Optional[str] = None
 
 
+class BookUpdate(BaseModel):
+    title: str
+    authors: List[str]
+    genre: Optional[str] = None
+
+
 class BookShowing(TunedModel):
     title: str
     authors: List[str]
     genre_id: Optional[UUID] = None
+

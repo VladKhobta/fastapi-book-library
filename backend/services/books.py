@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from typing import Union, List
 
-from schemas.books import BookCreation, BookShowing
+from schemas.books import BookCreation, BookShowing, BookUpdate
 from db.session import get_session
 from db.dals import BookDAL, AuthorDAL, GenreDAL
 
@@ -96,3 +96,24 @@ class BookService:
     ) -> UUID:
         book_dal = BookDAL(self.session)
         return await book_dal.delete(book_id)
+
+    async def update(
+            self,
+            book_id: UUID,
+            body: BookUpdate
+    ) -> UUID:
+        authors = []
+        author_dal = AuthorDAL(self.session)
+        for name in body.authors:
+            authors.append(await author_dal.get_by_name(name))
+        genre_dal = GenreDAL(self.session)
+        genre = await genre_dal.get_by_name(body.genre)
+        book_dal = BookDAL(self.session)
+
+        await book_dal.delete(book_id)
+        new_book = await book_dal.create(
+            title=body.title,
+            authors=authors,
+            genre=genre
+        )
+        return new_book.id
